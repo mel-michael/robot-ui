@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Polygon, useMap } from 'react-leaflet';
+import { Play, Pause, Move, RotateCcw } from 'lucide-react';
 import L, { type LatLngExpression } from 'leaflet';
 import type { RobotPosition } from './types/robot';
 
@@ -64,7 +65,7 @@ const App: React.FC = () => {
   const [meters, setMeters] = useState(1);
   const [autoIntervalMs, setAutoIntervalMs] = useState(1000);
   const [resetCount, setResetCount] = useState(20);
-  const [isAuto, setIsAuto] = useState(true); // server auto starts by default
+  const [isAutoRunning, setIsAutoRunning] = useState(true);
 
   const handleMove = useCallback(async () => {
     try {
@@ -102,7 +103,7 @@ const App: React.FC = () => {
         body: JSON.stringify({ meters, intervalMs: autoIntervalMs }),
       });
       await res.json();
-      setIsAuto(true);
+      setIsAutoRunning(true);
     } catch (e) {
       console.error('start-auto failed', e);
     }
@@ -114,7 +115,7 @@ const App: React.FC = () => {
         method: 'POST',
       });
       await res.json();
-      setIsAuto(false);
+      setIsAutoRunning(false);
     } catch (e) {
       console.error('stop-auto failed', e);
     }
@@ -123,45 +124,61 @@ const App: React.FC = () => {
   return (
     <div className="app-root">
       <header className="app-header">
-        <h1>Robot Visualization</h1>
-        <div className="controls">
-          <label>
-            Move meters:
-            <input
-              type="number"
-              value={meters}
-              onChange={(e) => setMeters(Number(e.target.value) || 0)}
-              min={0}
-            />
-          </label>
-          <button onClick={handleMove}>Step Once</button>
+        <div className="title-block">
+          <h1>Robot Visualization</h1>
+          <p>Downtown Los Angeles - {robots.length} robots active</p>
+        </div>
 
-          <label>
-            Reset count:
-            <input
-              type="number"
-              value={resetCount}
-              onChange={(e) => setResetCount(Number(e.target.value) || 0)}
-              min={0}
-            />
-          </label>
-          <button onClick={handleReset}>Reset Robots</button>
+        <div className="header-right">
+          <div className="primary-actions">
+            <button className="btn btn-primary" onClick={handleMove}>
+              <Move size={16} />
+              <span className="pl-2">Move Once</span>
+            </button>
+            <button
+              onClick={isAutoRunning ? handleStopAuto : handleStartAuto}
+              className={`btn ${isAutoRunning ? 'btn-danger' : 'btn-success'}`}
+            >
+              {isAutoRunning ? <Pause size={16} /> : <Play size={16} />}
+              <span className="pl-2">{isAutoRunning ? 'Stop Auto' : 'Start Auto'}</span>
+            </button>
+            <button className="btn btn-purple" onClick={handleReset}>
+              <RotateCcw size={16} />
+              <span className="pl-2">Reset</span>
+            </button>
+          </div>
 
-          <label>
-            Auto interval (ms):
-            <input
-              type="number"
-              value={autoIntervalMs}
-              onChange={(e) => setAutoIntervalMs(Number(e.target.value) || 0)}
-              min={100}
-            />
-          </label>
-          <button onClick={handleStartAuto}>Start Auto</button>
-          <button onClick={handleStopAuto} disabled={!isAuto}>
-            Stop Auto
-          </button>
+          <div className="secondary-controls">
+            <label>
+              Move meters:
+              <input
+                type="number"
+                value={meters}
+                onChange={(e) => setMeters(Number(e.target.value) || 0)}
+                min={0}
+              />
+            </label>
 
-          <span>{robots.length} robots</span>
+            <label>
+              Reset count:
+              <input
+                type="number"
+                value={resetCount}
+                onChange={(e) => setResetCount(Number(e.target.value) || 0)}
+                min={1}
+              />
+            </label>
+
+            <label>
+              Auto interval (ms):
+              <input
+                type="number"
+                value={autoIntervalMs}
+                onChange={(e) => setAutoIntervalMs(Number(e.target.value) || 0)}
+                min={100}
+              />
+            </label>
+          </div>
         </div>
       </header>
 
