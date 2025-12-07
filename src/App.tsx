@@ -1,28 +1,29 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Polygon, useMap } from 'react-leaflet';
 import L, { type LatLngExpression } from 'leaflet';
+import type { RobotPosition } from './types/robot';
 
 const API_BASE = 'http://localhost:4000';
 
-// Simple “robot” icon
+// Robot Icon
 const robotIcon = new L.DivIcon({
-  html: '🤖',
+  html: '<div class="robot-icon">🤖</div>',
   className: '',
-  iconSize: [24, 24],
-  iconAnchor: [12, 12],
+  iconSize: [32, 32],
+  iconAnchor: [16, 16],
 });
 
-// Polygon from backend (DTLA area)
+// Default Polygon - Downtown Los Angeles (DTLA) area
 const POLYGON: LatLngExpression[] = [
   [34.055, -118.275],
   [34.055, -118.225],
-  [34.020, -118.225],
-  [34.020, -118.275],
+  [34.02, -118.225],
+  [34.02, -118.275],
 ];
 
-type RobotPosition = [number, number];
-
-const FetchRobotsOnInterval: React.FC<{ onUpdate: (robots: RobotPosition[]) => void }> = ({ onUpdate }) => {
+const FetchRobotsOnInterval: React.FC<{ onUpdate: (robots: RobotPosition[]) => void }> = ({
+  onUpdate,
+}) => {
   useEffect(() => {
     let isCancelled = false;
 
@@ -57,7 +58,6 @@ const FitPolygonOnMount: React.FC = () => {
   }, [map]);
   return null;
 };
-
 
 const App: React.FC = () => {
   const [robots, setRobots] = useState<RobotPosition[]>([]);
@@ -130,7 +130,7 @@ const App: React.FC = () => {
             <input
               type="number"
               value={meters}
-              onChange={e => setMeters(Number(e.target.value) || 0)}
+              onChange={(e) => setMeters(Number(e.target.value) || 0)}
               min={0}
             />
           </label>
@@ -141,7 +141,7 @@ const App: React.FC = () => {
             <input
               type="number"
               value={resetCount}
-              onChange={e => setResetCount(Number(e.target.value) || 0)}
+              onChange={(e) => setResetCount(Number(e.target.value) || 0)}
               min={0}
             />
           </label>
@@ -152,7 +152,7 @@ const App: React.FC = () => {
             <input
               type="number"
               value={autoIntervalMs}
-              onChange={e => setAutoIntervalMs(Number(e.target.value) || 0)}
+              onChange={(e) => setAutoIntervalMs(Number(e.target.value) || 0)}
               min={100}
             />
           </label>
@@ -179,14 +179,14 @@ const App: React.FC = () => {
           />
 
           <Polygon
-  positions={POLYGON}
-  pathOptions={{
-    color: '#f97316',       // bright orange outline
-    weight: 3,              // thicker border
-    fillColor: '#f97316',
-    fillOpacity: 0.15,
-  }}
-/>
+            positions={POLYGON}
+            pathOptions={{
+              color: '#f97316',
+              weight: 3,
+              fillColor: '#f97316',
+              fillOpacity: 0.15,
+            }}
+          />
 
           {robots.map(([lat, lng], idx) => (
             <Marker key={idx} position={[lat, lng]} icon={robotIcon} />
