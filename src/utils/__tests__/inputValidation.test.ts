@@ -4,25 +4,18 @@ import { validateAllInputs } from '../inputValidation';
 describe('validateAllInputs', () => {
   describe('when all inputs are valid', () => {
     it('returns validated values without robot count', () => {
-      const result = validateAllInputs(
-        { meters: 5, intervalMs: 1000, robotCount: 20 },
-        false
-      );
+      const result = validateAllInputs({ meters: 5, intervalMs: 1000, robotCount: 20 }, false);
 
-      expect(result).toEqual({
-        validated: {
-          meters: 5,
-          intervalMs: 1000,
-          count: undefined,
-        },
-      });
+      expect('validated' in result).toBe(true);
+      if ('validated' in result) {
+        expect(result.validated.meters).toBe(5);
+        expect(result.validated.intervalMs).toBe(1000);
+        expect('count' in result.validated).toBe(false);
+      }
     });
 
     it('returns validated values with robot count', () => {
-      const result = validateAllInputs(
-        { meters: 5, intervalMs: 1000, robotCount: 20 },
-        true
-      );
+      const result = validateAllInputs({ meters: 5, intervalMs: 1000, robotCount: 20 }, true);
 
       expect(result).toEqual({
         validated: {
@@ -36,10 +29,7 @@ describe('validateAllInputs', () => {
 
   describe('when meters is invalid', () => {
     it('returns error when meters is below minimum', () => {
-      const result = validateAllInputs(
-        { meters: 0.05, intervalMs: 1000, robotCount: 20 },
-        false
-      );
+      const result = validateAllInputs({ meters: 0.05, intervalMs: 1000, robotCount: 20 }, false);
 
       expect('error' in result).toBe(true);
       if ('error' in result) {
@@ -50,10 +40,7 @@ describe('validateAllInputs', () => {
     });
 
     it('returns error when meters is above maximum', () => {
-      const result = validateAllInputs(
-        { meters: 2000, intervalMs: 1000, robotCount: 20 },
-        false
-      );
+      const result = validateAllInputs({ meters: 2000, intervalMs: 1000, robotCount: 20 }, false);
 
       expect('error' in result).toBe(true);
       if ('error' in result) {
@@ -66,10 +53,7 @@ describe('validateAllInputs', () => {
 
   describe('when interval is invalid', () => {
     it('returns error when interval is below minimum', () => {
-      const result = validateAllInputs(
-        { meters: 5, intervalMs: 50, robotCount: 20 },
-        false
-      );
+      const result = validateAllInputs({ meters: 5, intervalMs: 50, robotCount: 20 }, false);
 
       expect('error' in result).toBe(true);
       if ('error' in result) {
@@ -82,10 +66,7 @@ describe('validateAllInputs', () => {
 
   describe('when robot count is invalid', () => {
     it('returns error when count is below minimum (when validated)', () => {
-      const result = validateAllInputs(
-        { meters: 5, intervalMs: 1000, robotCount: 0 },
-        true
-      );
+      const result = validateAllInputs({ meters: 5, intervalMs: 1000, robotCount: 0 }, true);
 
       expect('error' in result).toBe(true);
       if ('error' in result) {
@@ -96,27 +77,20 @@ describe('validateAllInputs', () => {
     });
 
     it('does not validate count when includeRobotCount is false', () => {
-      const result = validateAllInputs(
-        { meters: 5, intervalMs: 1000, robotCount: 0 },
-        false
-      );
+      const result = validateAllInputs({ meters: 5, intervalMs: 1000, robotCount: 0 }, false);
 
-      expect(result).toEqual({
-        validated: {
-          meters: 5,
-          intervalMs: 1000,
-          count: undefined,
-        },
-      });
+      expect('validated' in result).toBe(true);
+      if ('validated' in result) {
+        expect(result.validated.meters).toBe(5);
+        expect(result.validated.intervalMs).toBe(1000);
+        expect('count' in result.validated).toBe(false);
+      }
     });
   });
 
   describe('when multiple inputs are invalid', () => {
     it('returns the first validation error (meters checked first)', () => {
-      const result = validateAllInputs(
-        { meters: 0, intervalMs: 0, robotCount: 0 },
-        true
-      );
+      const result = validateAllInputs({ meters: 0, intervalMs: 0, robotCount: 0 }, true);
 
       expect('error' in result).toBe(true);
       if ('error' in result) {
@@ -125,4 +99,3 @@ describe('validateAllInputs', () => {
     });
   });
 });
-
