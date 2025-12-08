@@ -26,7 +26,7 @@ const App: React.FC = () => {
   const [robots, setRobots] = useState<RobotPosition[]>([]);
   const [meters, setMeters] = useState(DEFAULT_MOVE_METERS);
   const [autoIntervalMs, setAutoIntervalMs] = useState(DEFAULT_MOVE_INTERVAL_MS);
-  const [resetCount, setResetCount] = useState(DEFAULT_ROBOT_COUNT);
+  const [robotCount, setRobotCount] = useState(DEFAULT_ROBOT_COUNT);
   const [isAutoRunning, setIsAutoRunning] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
@@ -73,7 +73,7 @@ const App: React.FC = () => {
       'Auto interval'
     );
     const countValidation = validateInRange(
-      resetCount,
+      robotCount,
       MIN_ROBOT_COUNT,
       MAX_ROBOT_COUNT,
       'Robot count'
@@ -93,7 +93,7 @@ const App: React.FC = () => {
 
     if (!countValidation.isValid) {
       setError(countValidation.error ?? null);
-      setResetCount(countValidation.value);
+      setRobotCount(countValidation.value);
       return;
     }
 
@@ -113,7 +113,7 @@ const App: React.FC = () => {
       setIsAutoRunning(false);
     }
 
-    // Update robot count (re-initialize)
+    // Update robot count
     const resetResult = await robotApi.reset({ count: countValidation.value });
     if (!resetResult.success) {
       setError(`Failed to update robot count: ${resetResult.error}`);
@@ -137,7 +137,7 @@ const App: React.FC = () => {
     }
 
     setLoadingAction(null);
-  }, [meters, autoIntervalMs, resetCount, isAutoRunning]);
+  }, [meters, autoIntervalMs, robotCount, isAutoRunning]);
 
   const handleStartAuto = useCallback(async () => {
     const metersValidation = validateInRange(
@@ -207,7 +207,7 @@ const App: React.FC = () => {
     // Reset to defaults
     setMeters(DEFAULT_MOVE_METERS);
     setAutoIntervalMs(DEFAULT_MOVE_INTERVAL_MS);
-    setResetCount(DEFAULT_ROBOT_COUNT);
+    setRobotCount(DEFAULT_ROBOT_COUNT);
 
     // Re-initialize with default count
     const result = await robotApi.reset({ count: DEFAULT_ROBOT_COUNT });
@@ -295,15 +295,15 @@ const App: React.FC = () => {
               Robot count:
               <input
                 type="number"
-                value={resetCount}
+                value={robotCount}
                 onChange={(e) => {
                   const val = Number(e.target.value);
-                  setResetCount(val);
+                  setRobotCount(val);
                 }}
                 onBlur={(e) => {
                   const val = Number(e.target.value);
-                  if (val < MIN_ROBOT_COUNT) setResetCount(MIN_ROBOT_COUNT);
-                  else if (val > MAX_ROBOT_COUNT) setResetCount(MAX_ROBOT_COUNT);
+                  if (val < MIN_ROBOT_COUNT) setRobotCount(MIN_ROBOT_COUNT);
+                  else if (val > MAX_ROBOT_COUNT) setRobotCount(MAX_ROBOT_COUNT);
                 }}
                 min={MIN_ROBOT_COUNT}
                 max={MAX_ROBOT_COUNT}
@@ -316,7 +316,7 @@ const App: React.FC = () => {
               className={`btn btn-secondary ${loadingAction === 'apply-changes' ? 'btn-loading' : ''}`}
               onClick={handleApplyChanges}
               disabled={loadingAction !== null}
-              title="Apply all parameter changes (updates robot count and restarts auto if running)"
+              title="Apply all changes and update robot count"
             >
               Apply Changes
             </button>

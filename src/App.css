@@ -70,6 +70,9 @@
   border-radius: 6px;
   border: 1px solid #1e293b;
   color: #e5e7eb;
+  font-size: 0.95rem;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .secondary-controls input:focus {
@@ -103,20 +106,27 @@
 /* Buttons */
 .btn {
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 0.75rem 1.2rem;
-  font-weight: 600;
-  font-size: 0.95rem;
+  font-weight: 400;
+  font-size: 1rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 .btn:hover {
   transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(0);
 }
 
 .btn:disabled {
@@ -142,9 +152,9 @@
 }
 
 .btn-secondary {
-  background: #1f2937;
-  color: #e5e7eb;
-  border: 1px solid #243045;
+  background: #3b82f6;
+  color: white;
+  border: none;
   padding: 0.65rem 1rem;
 }
 
@@ -166,7 +176,7 @@
   background: #9333ea;
 }
 .btn-secondary:hover {
-  background: #273143;
+  background: #2563eb;
 }
 
 .btn-loading {
@@ -255,4 +265,295 @@
 
 .pl-2 {
   padding-left: 0.5rem;
+}
+
+/* ======================================
+   RESPONSIVE STYLES
+   ====================================== */
+
+/* Tablet and below (< 1024px) */
+@media (max-width: 1023px) {
+  .app-header {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1rem;
+  }
+
+  .title-block h1 {
+    font-size: 1.75rem;
+  }
+
+  .title-block p {
+    font-size: 0.875rem;
+  }
+
+  .header-right {
+    margin-left: 0;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .primary-actions {
+    justify-content: stretch;
+    gap: 0.5rem;
+  }
+
+  .primary-actions .btn {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .secondary-controls {
+    justify-content: stretch;
+    gap: 0.5rem;
+  }
+
+  .secondary-controls label {
+    flex: 1;
+    min-width: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+  }
+
+  .secondary-controls input {
+    width: 100%;
+  }
+
+  .secondary-controls .btn {
+    width: 100%;
+  }
+
+  .map-container {
+    height: calc(100vh - 180px);
+  }
+}
+
+/* Mobile (< 640px) */
+@media (max-width: 639px) {
+  .app-root {
+    position: relative;
+  }
+
+  .app-header {
+    padding: 0.75rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .title-block h1 {
+    font-size: 1.5rem;
+  }
+
+  .title-block p {
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+  }
+
+  .header-right {
+    gap: 0.5rem;
+  }
+
+  /* Move primary actions to bottom */
+  .primary-actions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: linear-gradient(135deg, #0f172a, #111827);
+    border-top: 1px solid #1e293b;
+    padding: 0.5rem;
+    gap: 0.5rem;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+    flex-direction: row;
+    justify-content: stretch;
+  }
+
+  .primary-actions .btn {
+    flex: 1;
+    padding: 0.65rem 0.5rem;
+    font-size: 0.75rem;
+    min-height: 44px;
+    gap: 0.25rem;
+    border-radius: 6px;
+  }
+
+  .primary-actions .btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .primary-actions .btn .pl-2 {
+    padding-left: 0.25rem;
+    font-size: 0.75rem;
+  }
+
+  /* Keep secondary controls in header - single row */
+  .secondary-controls {
+    flex-direction: row;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .secondary-controls label {
+    flex: 0 1 auto;
+    min-width: 0;
+    flex-direction: row;
+    padding: 0.4rem 0.5rem;
+    font-size: 0.7rem;
+    gap: 0.25rem;
+  }
+
+  .secondary-controls input {
+    width: 50px;
+    padding: 0.35rem 0.4rem;
+    font-size: 0.8rem;
+    min-height: auto;
+  }
+
+  .secondary-controls .btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    min-height: 36px;
+    white-space: nowrap;
+  }
+
+  .error-banner {
+    padding: 0.65rem 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .error-message {
+    font-size: 0.85rem;
+  }
+
+  .error-dismiss {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Adjust map container to account for bottom bar */
+  .map-container {
+    height: calc(100vh - 140px);
+    margin-bottom: 60px;
+  }
+}
+
+/* Small mobile (< 380px) */
+@media (max-width: 379px) {
+  .title-block h1 {
+    font-size: 1.25rem;
+  }
+
+  .title-block p {
+    font-size: 0.7rem;
+  }
+
+  .primary-actions .btn {
+    padding: 0.6rem 0.4rem;
+    font-size: 0.7rem;
+  }
+
+  .primary-actions .btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .primary-actions .btn .pl-2 {
+    padding-left: 0.2rem;
+    font-size: 0.7rem;
+  }
+
+  .secondary-controls label {
+    font-size: 0.65rem;
+    padding: 0.35rem 0.4rem;
+  }
+
+  .secondary-controls input {
+    width: 45px;
+    padding: 0.3rem;
+    font-size: 0.75rem;
+  }
+
+  .secondary-controls .btn {
+    padding: 0.45rem 0.6rem;
+    font-size: 0.7rem;
+  }
+}
+
+/* Landscape mobile optimization */
+@media (max-height: 500px) and (orientation: landscape) {
+  .app-header {
+    padding: 0.4rem 0.75rem;
+  }
+
+  .title-block h1 {
+    font-size: 1.1rem;
+  }
+
+  .title-block p {
+    display: none;
+  }
+
+  .header-right {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  /* Keep primary actions at bottom in landscape too */
+  .primary-actions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    flex-direction: row;
+    padding: 0.4rem;
+    gap: 0.4rem;
+  }
+
+  .primary-actions .btn {
+    flex: 1;
+    padding: 0.4rem 0.5rem;
+    font-size: 0.7rem;
+    min-height: 40px;
+  }
+
+  .primary-actions .btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .secondary-controls {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .secondary-controls label {
+    flex-direction: row;
+    padding: 0.3rem 0.4rem;
+    font-size: 0.7rem;
+  }
+
+  .secondary-controls input {
+    width: 50px;
+    padding: 0.25rem;
+    font-size: 0.75rem;
+  }
+
+  .secondary-controls .btn {
+    padding: 0.4rem 0.6rem;
+    font-size: 0.7rem;
+  }
+
+  .map-container {
+    height: calc(100vh - 90px);
+    margin-bottom: 50px;
+  }
 }
