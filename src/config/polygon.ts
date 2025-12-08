@@ -14,3 +14,11 @@ export const POLYGON: LatLngExpression[] = [
   [34.02, -118.225],
   [34.02, -118.275],
 ];
+
+// Calculate the center of the polygon
+const latitudes = POLYGON.map((point) => (point as number[])[0]);
+const longitudes = POLYGON.map((point) => (point as number[])[1]);
+const centerLat = (Math.max(...latitudes) + Math.min(...latitudes)) / 2;
+const centerLng = (Math.max(...longitudes) + Math.min(...longitudes)) / 2;
+
+export const POLYGON_CENTER: LatLngExpression = [centerLat, centerLng];

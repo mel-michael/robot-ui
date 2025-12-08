@@ -2,17 +2,22 @@ import React, { useState, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Polygon } from 'react-leaflet';
 import { Play, Pause, Move, RotateCcw } from 'lucide-react';
 
-import { robotIcon, POLYGON } from './config/polygon';
+import { robotIcon, POLYGON, POLYGON_CENTER } from './config/polygon';
 import { MapBoundsHandler } from './components/MapHandler';
 import { useRobotsFetch } from './hooks/useRobotsFetch';
-import { API_BASE_URL, DEFAULT_MOVE_INTERVAL_MS } from './config/constant';
+import {
+  API_BASE_URL,
+  DEFAULT_ROBOT_COUNT,
+  DEFAULT_MOVE_METERS,
+  DEFAULT_MOVE_INTERVAL_MS,
+} from './config/constant';
 import type { RobotPosition } from './types/robot';
 
 const App: React.FC = () => {
   const [robots, setRobots] = useState<RobotPosition[]>([]);
-  const [meters, setMeters] = useState(1);
+  const [meters, setMeters] = useState(DEFAULT_MOVE_METERS);
   const [autoIntervalMs, setAutoIntervalMs] = useState(DEFAULT_MOVE_INTERVAL_MS);
-  const [resetCount, setResetCount] = useState(20);
+  const [resetCount, setResetCount] = useState(DEFAULT_ROBOT_COUNT);
   const [isAutoRunning, setIsAutoRunning] = useState(true);
 
   // Fetch robots on interval
@@ -136,7 +141,7 @@ const App: React.FC = () => {
       <main className="map-container">
         <MapContainer
           style={{ height: '100%', width: '100%' }}
-          center={[34.04, -118.25]}
+          center={POLYGON_CENTER}
           zoom={14}
           scrollWheelZoom
         >
