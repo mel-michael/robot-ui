@@ -153,6 +153,11 @@ button:focus-visible {
   color: #e5e7eb;
 }
 
+.secondary-controls input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .secondary-controls input:focus {
   outline: none;
 }
