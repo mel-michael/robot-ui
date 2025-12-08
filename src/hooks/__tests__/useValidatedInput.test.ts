@@ -11,7 +11,7 @@ describe('useValidatedInput', () => {
     vi.clearAllMocks();
     vi.restoreAllMocks();
   });
-  it('initializes with provided value', () => {
+  it('initializes with provided value when within range', () => {
     const { result } = renderHook(() =>
       useValidatedInput({
         initialValue: 5,
@@ -21,6 +21,54 @@ describe('useValidatedInput', () => {
     );
 
     expect(result.current.value).toBe(5);
+  });
+
+  it('clamps initial value below minimum to min', () => {
+    const { result } = renderHook(() =>
+      useValidatedInput({
+        initialValue: -5,
+        min: 0,
+        max: 10,
+      })
+    );
+
+    expect(result.current.value).toBe(0);
+  });
+
+  it('clamps initial value above maximum to max', () => {
+    const { result } = renderHook(() =>
+      useValidatedInput({
+        initialValue: 15,
+        min: 0,
+        max: 10,
+      })
+    );
+
+    expect(result.current.value).toBe(10);
+  });
+
+  it('clamps NaN initial value to min', () => {
+    const { result } = renderHook(() =>
+      useValidatedInput({
+        initialValue: NaN,
+        min: 0,
+        max: 10,
+      })
+    );
+
+    expect(result.current.value).toBe(0);
+  });
+
+  it('clamps Infinity initial value to min', () => {
+    const { result } = renderHook(() =>
+      useValidatedInput({
+        initialValue: Infinity,
+        min: 0,
+        max: 10,
+      })
+    );
+
+    expect(result.current.value).toBe(0);
   });
 
   it('updates value on change with valid number', () => {
@@ -42,7 +90,26 @@ describe('useValidatedInput', () => {
     expect(result.current.value).toBe(7);
   });
 
-  it('replaces NaN with min value on change', () => {
+  it('preserves value when input is empty during typing', () => {
+    const { result } = renderHook(() =>
+      useValidatedInput({
+        initialValue: 5,
+        min: 0,
+        max: 10,
+      })
+    );
+
+    act(() => {
+      const event = {
+        target: { value: '' },
+      } as React.ChangeEvent<HTMLInputElement>;
+      result.current.handleChange(event);
+    });
+
+    expect(result.current.value).toBe(5);
+  });
+
+  it('preserves value when input is invalid during typing', () => {
     const { result } = renderHook(() =>
       useValidatedInput({
         initialValue: 5,
@@ -58,10 +125,10 @@ describe('useValidatedInput', () => {
       result.current.handleChange(event);
     });
 
-    expect(result.current.value).toBe(0);
+    expect(result.current.value).toBe(5);
   });
 
-  it('replaces Infinity with min value on change', () => {
+  it('preserves value when input is Infinity during typing', () => {
     const { result } = renderHook(() =>
       useValidatedInput({
         initialValue: 5,
@@ -77,7 +144,35 @@ describe('useValidatedInput', () => {
       result.current.handleChange(event);
     });
 
-    expect(result.current.value).toBe(0);
+    expect(result.current.value).toBe(5);
+  });
+
+  it('allows clearing input field to type new number', () => {
+    const { result } = renderHook(() =>
+      useValidatedInput({
+        initialValue: 5,
+        min: 0,
+        max: 10,
+      })
+    );
+
+    act(() => {
+      const event = {
+        target: { value: '' },
+      } as React.ChangeEvent<HTMLInputElement>;
+      result.current.handleChange(event);
+    });
+
+    expect(result.current.value).toBe(5);
+
+    act(() => {
+      const event = {
+        target: { value: '8' },
+      } as React.ChangeEvent<HTMLInputElement>;
+      result.current.handleChange(event);
+    });
+
+    expect(result.current.value).toBe(8);
   });
 
   it('clamps value to min on blur when below minimum', () => {
@@ -192,25 +287,6 @@ describe('useValidatedInput', () => {
     });
 
     expect(result.current.value).toBe(0.75);
-  });
-
-  it('handles empty string input', () => {
-    const { result } = renderHook(() =>
-      useValidatedInput({
-        initialValue: 5,
-        min: 0,
-        max: 10,
-      })
-    );
-
-    act(() => {
-      const event = {
-        target: { value: '' },
-      } as React.ChangeEvent<HTMLInputElement>;
-      result.current.handleChange(event);
-    });
-
-    expect(result.current.value).toBe(0);
   });
 
   it('handles negative ranges', () => {

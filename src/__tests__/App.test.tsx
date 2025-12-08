@@ -98,12 +98,4 @@ describe('<App />', () => {
     expect(screen.getByTestId('polygon')).toBeInTheDocument();
     expect(screen.getByTestId('tile-layer')).toBeInTheDocument();
   });
-
-  it('renders map container structure', () => {
-    render(<App />);
-
-    expect(screen.getByTestId('map-container')).toBeInTheDocument();
-    expect(screen.getByTestId('polygon')).toBeInTheDocument();
-    expect(screen.getByTestId('tile-layer')).toBeInTheDocument();
-  });
 });

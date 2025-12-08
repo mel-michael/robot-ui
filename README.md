@@ -48,7 +48,7 @@ This frontend application requires a running backend API to function. The backen
    Create a `.env` file in the root directory:
 
    ```env
-   VITE_API_BASE_URL=http://localhost:8080
+   VITE_API_BASE_URL=http://localhost:4000
    ```
 
 3. **Start development server:**

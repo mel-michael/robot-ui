@@ -172,17 +172,23 @@ const App: React.FC = () => {
     setIsLoading(true);
     setError(null);
 
-    const apiResult = await robotApi.startAuto({
-      meters: validated.meters,
-      intervalMs: validated.intervalMs,
-    });
+    try {
+      const apiResult = await robotApi.startAuto({
+        meters: validated.meters,
+        intervalMs: validated.intervalMs,
+      });
 
-    if (apiResult.success) {
-      setIsAutoRunning(true);
-    } else {
-      setError(`Start auto failed: ${apiResult.error}`);
+      if (apiResult.success) {
+        setIsAutoRunning(true);
+      } else {
+        setError(`Start auto failed: ${apiResult.error}`);
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      setError(`Start auto failed: ${errorMessage}`);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   }, [meters, autoIntervalMs, robotCount]);
 
   const handleStopAuto = useCallback(async () => {
