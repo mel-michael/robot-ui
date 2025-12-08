@@ -6,8 +6,8 @@ export const DEFAULT_MOVE_METERS = 1;
 
 // Validation constraints
 export const MIN_MOVE_METERS = 0.1;
-export const MAX_MOVE_METERS = 10000;
+export const MAX_MOVE_METERS = 1000;
 export const MIN_ROBOT_COUNT = 1;
-export const MAX_ROBOT_COUNT = 10000;
+export const MAX_ROBOT_COUNT = 1000;
 export const MIN_INTERVAL_MS = 100;
 export const MAX_INTERVAL_MS = 3600000; // 1 hour

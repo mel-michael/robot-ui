@@ -1,6 +1,258 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+.app-root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background: #0b1220;
+  color: #e5e7eb;
+}
+
+.app-header {
+  display: flex;
+  align-items: flex-start;
+  padding: 1rem 1.5rem;
+  gap: 1rem;
+  background: linear-gradient(135deg, #0f172a, #111827);
+  border-bottom: 1px solid #1e293b;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+}
+
+.title-block h1 {
+  margin: 0;
+  font-size: 2.1rem;
+  letter-spacing: -0.02em;
+}
+
+.title-block p {
+  margin: 0.35rem 0 0;
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+.header-right {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  align-items: flex-end;
+}
+
+.primary-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.secondary-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.secondary-controls label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  background: #0f172a;
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid #1e293b;
+}
+
+.secondary-controls input {
+  width: 76px;
+  padding: 0.45rem 0.5rem;
+  background: #0b1220;
+  border-radius: 6px;
+  border: 1px solid #1e293b;
+  color: #e5e7eb;
+}
+
+.secondary-controls input:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+.secondary-controls input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.map-container {
+  flex: 1;
+  height: calc(100vh - 120px);
+}
+
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  background: #0b1220;
+}
+
+.robot-icon {
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Buttons */
+.btn {
+  border: none;
+  border-radius: 10px;
+  padding: 0.75rem 1.2rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: white;
+}
+
+.btn-success {
+  background: #22c55e;
+  color: white;
+}
+
+.btn-danger {
+  background: #dc2626;
+  color: white;
+}
+
+.btn-secondary {
+  background: #1f2937;
+  color: #e5e7eb;
+  border: 1px solid #243045;
+  padding: 0.65rem 1rem;
+}
+
+.btn-purple {
+  background: #a855f7;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+}
+.btn-success:hover {
+  background: #16a34a;
+}
+.btn-danger:hover {
+  background: #b91c1c;
+}
+.btn-purple:hover {
+  background: #9333ea;
+}
+.btn-secondary:hover {
+  background: #273143;
+}
+
+.btn-loading {
+  position: relative;
+  color: transparent;
+}
+
+.btn-loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 50%;
+  left: 50%;
+  margin-left: -8px;
+  margin-top: -8px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+/* Error Banner */
+.error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #7f1d1d, #991b1b);
+  border-bottom: 1px solid #b91c1c;
+  color: #fecaca;
+  animation: slideDown 0.3s ease-out;
+}
+
+.error-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.error-icon {
+  flex-shrink: 0;
+  color: #fca5a5;
+}
+
+.error-message {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.error-dismiss {
+  background: transparent;
+  border: none;
+  color: #fca5a5;
+  cursor: pointer;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.error-dismiss:hover {
+  background: rgba(0, 0, 0, 0.15);
+  color: #fef2f2;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.pl-2 {
+  padding-left: 0.5rem;
 }
