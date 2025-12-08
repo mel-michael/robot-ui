@@ -335,8 +335,8 @@ const App: React.FC = () => {
             }}
           />
 
-          {robots.map(([lat, lng], index) => {
-            const robotId = `${lat}-${lng}-${index}`;
+          {robots.map(([lat, lng]) => {
+            const robotId = `robot-${lat.toFixed(6)}-${lng.toFixed(6)}`;
             return <Marker key={robotId} position={[lat, lng]} icon={robotIcon} />;
           })}
         </MapContainer>
