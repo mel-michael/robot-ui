@@ -7,24 +7,34 @@ type UseRobotsFetchProps = {
   onUpdate: (robots: RobotPosition[]) => void;
   onError?: (error: string) => void;
   intervalMs: number;
+  enabled?: boolean;
 };
 
 export const useRobotsFetch = ({
   onUpdate,
   onError,
   intervalMs = DEFAULT_MOVE_INTERVAL_MS,
+  enabled = true,
 }: UseRobotsFetchProps) => {
   useEffect(() => {
+    if (!enabled) return;
+
     let isCancelled = false;
+    let abortController: AbortController | null = null;
 
     const fetchRobots = async () => {
-      const result = await robotApi.getRobots();
+      if (abortController) {
+        abortController.abort();
+      }
+
+      abortController = new AbortController();
+      const result = await robotApi.getRobots(abortController.signal);
 
       if (isCancelled) return;
 
       if (result.success) {
         onUpdate(result.data.robots ?? []);
-      } else if (onError) {
+      } else if (onError && result.error !== 'Request cancelled') {
         onError(`Failed to fetch robots: ${result.error}`);
       }
     };
@@ -35,6 +45,9 @@ export const useRobotsFetch = ({
     return () => {
       isCancelled = true;
       clearInterval(fetchIntervalId);
+      if (abortController) {
+        abortController.abort();
+      }
     };
-  }, [onUpdate, onError, intervalMs]);
+  }, [onUpdate, onError, intervalMs, enabled]);
 };

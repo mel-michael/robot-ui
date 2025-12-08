@@ -23,11 +23,12 @@ const App: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
 
-  // Fetch robots on interval
+  // Fetch robots on interval (only when auto-running)
   useRobotsFetch({
     onUpdate: setRobots,
     onError: setError,
     intervalMs: autoIntervalMs,
+    enabled: isAutoRunning,
   });
 
   const handleMove = useCallback(async () => {

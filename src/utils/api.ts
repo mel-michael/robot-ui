@@ -33,6 +33,7 @@ export interface StartAutoRequest {
 interface FetchOptions {
   maxRetries?: number;
   retryDelay?: number;
+  signal?: AbortSignal;
 }
 
 async function sleep(ms: number): Promise<void> {
@@ -44,12 +45,12 @@ async function fetchWithRetry<T>(
   options: RequestInit,
   config: FetchOptions = {}
 ): Promise<ApiResult<T>> {
-  const { maxRetries = 2, retryDelay = 1000 } = config;
+  const { maxRetries = 2, retryDelay = 1000, signal } = config;
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      const response = await fetch(url, options);
+      const response = await fetch(url, { ...options, signal });
 
       if (!response.ok) {
         const text = await response.text();
@@ -60,6 +61,14 @@ async function fetchWithRetry<T>(
       return { success: true, data };
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
+
+      // Don't retry if request was aborted
+      if (lastError.name === 'AbortError') {
+        return {
+          success: false,
+          error: 'Request cancelled',
+        };
+      }
 
       if (attempt < maxRetries) {
         await sleep(retryDelay * Math.pow(2, attempt));
@@ -74,11 +83,11 @@ async function fetchWithRetry<T>(
 }
 
 export const robotApi = {
-  async getRobots(): Promise<ApiResult<RobotsResponse>> {
+  async getRobots(signal?: AbortSignal): Promise<ApiResult<RobotsResponse>> {
     return fetchWithRetry<RobotsResponse>(
       `${API_BASE_URL}/robots`,
       { method: 'GET' },
-      { maxRetries: 1, retryDelay: 500 }
+      { maxRetries: 1, retryDelay: 500, signal }
     );
   },
 
