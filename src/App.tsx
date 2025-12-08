@@ -11,15 +11,15 @@ import { robotApi } from './utils/api';
 import { validateInRange } from './utils/validation';
 import { validateAllInputs } from './utils/inputValidation';
 import {
-  DEFAULT_ROBOT_COUNT,
-  DEFAULT_MOVE_METERS,
-  DEFAULT_MOVE_INTERVAL_MS,
   MIN_MOVE_METERS,
   MAX_MOVE_METERS,
   MIN_ROBOT_COUNT,
   MAX_ROBOT_COUNT,
   MIN_INTERVAL_MS,
   MAX_INTERVAL_MS,
+  DEFAULT_ROBOT_COUNT,
+  DEFAULT_MOVE_METERS,
+  DEFAULT_MOVE_INTERVAL_MS,
 } from './config/constant';
 import type { RobotPosition } from './types/robot';
 import './App.css';
@@ -27,7 +27,7 @@ import './App.css';
 const App: React.FC = () => {
   const [isAutoRunning, setIsAutoRunning] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [robots, setRobots] = useState<RobotPosition[]>([]);
 
   const meters = useValidatedInput({
@@ -57,19 +57,20 @@ const App: React.FC = () => {
   });
 
   const handleMove = useCallback(async () => {
-    // Validate meters only
     const validation = validateInRange(
       meters.value,
       MIN_MOVE_METERS,
       MAX_MOVE_METERS,
       'Move meters'
     );
+
     if (!validation.isValid) {
       setError(validation.error ?? null);
       meters.setValue(validation.value);
       return;
     }
 
+    setIsLoading(true);
     setError(null);
     const result = await robotApi.move({ meters: validation.value });
 
@@ -78,6 +79,7 @@ const App: React.FC = () => {
     } else {
       setError(`Move failed: ${result.error}`);
     }
+    setIsLoading(false);
   }, [meters]);
 
   const handleApplyChanges = useCallback(async () => {
@@ -105,7 +107,7 @@ const App: React.FC = () => {
     }
 
     const { validated } = result;
-    setLoadingAction('apply-changes');
+    setIsLoading(true);
     setError(null);
 
     const wasRunning = isAutoRunning;
@@ -114,7 +116,7 @@ const App: React.FC = () => {
       const stopResult = await robotApi.stopAuto();
       if (!stopResult.success) {
         setError(`Failed to stop auto: ${stopResult.error}`);
-        setLoadingAction(null);
+        setIsLoading(false);
         return;
       }
       setIsAutoRunning(false);
@@ -123,10 +125,11 @@ const App: React.FC = () => {
     const resetResult = await robotApi.reset({ count: validated.count! });
     if (!resetResult.success) {
       setError(`Failed to update robot count: ${resetResult.error}`);
-      setLoadingAction(null);
+      setIsLoading(false);
       return;
     }
     setRobots(resetResult.data.robots ?? []);
+    robotCount.setValue(validated.count!);
 
     if (wasRunning) {
       const startResult = await robotApi.startAuto({
@@ -141,7 +144,7 @@ const App: React.FC = () => {
       }
     }
 
-    setLoadingAction(null);
+    setIsLoading(false);
   }, [meters, autoIntervalMs, robotCount, isAutoRunning]);
 
   const handleStartAuto = useCallback(async () => {
@@ -151,7 +154,7 @@ const App: React.FC = () => {
         intervalMs: autoIntervalMs.value,
         robotCount: robotCount.value,
       },
-      false // don't include robot count
+      false
     );
 
     if ('error' in result) {
@@ -166,6 +169,7 @@ const App: React.FC = () => {
     }
 
     const { validated } = result;
+    setIsLoading(true);
     setError(null);
 
     const apiResult = await robotApi.startAuto({
@@ -178,9 +182,11 @@ const App: React.FC = () => {
     } else {
       setError(`Start auto failed: ${apiResult.error}`);
     }
+    setIsLoading(false);
   }, [meters, autoIntervalMs, robotCount]);
 
   const handleStopAuto = useCallback(async () => {
+    setIsLoading(true);
     setError(null);
 
     const result = await robotApi.stopAuto();
@@ -190,16 +196,18 @@ const App: React.FC = () => {
     } else {
       setError(`Stop auto failed: ${result.error}`);
     }
+    setIsLoading(false);
   }, []);
 
   const handleReset = useCallback(async () => {
+    setIsLoading(true);
     setError(null);
 
-    // Stop auto if running
     if (isAutoRunning) {
       const stopResult = await robotApi.stopAuto();
       if (!stopResult.success) {
         setError(`Failed to stop auto: ${stopResult.error}`);
+        setIsLoading(false);
         return;
       }
       setIsAutoRunning(false);
@@ -216,6 +224,7 @@ const App: React.FC = () => {
     } else {
       setError(`Reset failed: ${result.error}`);
     }
+    setIsLoading(false);
   }, [isAutoRunning, meters, autoIntervalMs, robotCount]);
 
   return (
@@ -230,18 +239,19 @@ const App: React.FC = () => {
 
         <div className="header-right">
           <div className="primary-actions">
-            <button className="btn btn-primary" onClick={handleMove}>
+            <button className="btn btn-primary" onClick={handleMove} disabled={isLoading}>
               <Move size={16} />
               <span className="pl-2">Move Once</span>
             </button>
             <button
               onClick={isAutoRunning ? handleStopAuto : handleStartAuto}
               className={`btn ${isAutoRunning ? 'btn-danger' : 'btn-success'}`}
+              disabled={isLoading}
             >
               {isAutoRunning ? <Pause size={16} /> : <Play size={16} />}
               <span className="pl-2">{isAutoRunning ? 'Stop Auto' : 'Start Auto'}</span>
             </button>
-            <button className="btn btn-purple" onClick={handleReset}>
+            <button className="btn btn-purple" onClick={handleReset} disabled={isLoading}>
               <RotateCcw size={16} />
               <span className="pl-2">Reset All</span>
             </button>
@@ -258,7 +268,7 @@ const App: React.FC = () => {
                 min={MIN_MOVE_METERS}
                 max={MAX_MOVE_METERS}
                 step={0.1}
-                disabled={loadingAction !== null}
+                disabled={isLoading}
               />
             </label>
 
@@ -272,7 +282,7 @@ const App: React.FC = () => {
                 min={MIN_INTERVAL_MS}
                 max={MAX_INTERVAL_MS}
                 step={100}
-                disabled={loadingAction !== null}
+                disabled={isLoading}
               />
             </label>
 
@@ -286,14 +296,14 @@ const App: React.FC = () => {
                 min={MIN_ROBOT_COUNT}
                 max={MAX_ROBOT_COUNT}
                 step={1}
-                disabled={loadingAction !== null}
+                disabled={isLoading}
               />
             </label>
 
             <button
-              className={`btn btn-secondary ${loadingAction === 'apply-changes' ? 'btn-loading' : ''}`}
+              className="btn btn-secondary"
               onClick={handleApplyChanges}
-              disabled={loadingAction !== null}
+              disabled={isLoading}
               title="Apply all changes and update robot count"
             >
               Apply Changes
@@ -325,8 +335,8 @@ const App: React.FC = () => {
             }}
           />
 
-          {robots.map(([lat, lng]) => {
-            const robotId = `${crypto.randomUUID()}-${lat}-${lng}`;
+          {robots.map(([lat, lng], index) => {
+            const robotId = `${lat}-${lng}-${index}`;
             return <Marker key={robotId} position={[lat, lng]} icon={robotIcon} />;
           })}
         </MapContainer>

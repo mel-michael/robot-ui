@@ -27,10 +27,13 @@ export const useValidatedInput = ({
 }: UseValidatedInputOptions): UseValidatedInputReturn => {
   const [value, setValue] = useState(initialValue);
 
-  const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    const newValue = Number(e.target.value);
-    setValue(newValue);
-  }, []);
+  const handleChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const newValue = Number(e.target.value);
+      setValue(Number.isFinite(newValue) ? newValue : min);
+    },
+    [min]
+  );
 
   const handleBlur = useCallback(() => {
     const clamped = clamp(value, min, max);
