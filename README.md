@@ -1,73 +1,88 @@
-# React + TypeScript + Vite
+# Robot Visualization
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A real-time robot tracking application built with React, TypeScript, and Leaflet, visualizing robot movements within Downtown Los Angeles.
 
-Currently, two official plugins are available:
+## Prerequisites
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js 18+ and npm
+- Backend API running (default: `http://localhost:4000`)
 
-## React Compiler
+## Backend Setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+This frontend application requires a running backend API to function. The backend is in a separate repository.
 
-## Expanding the ESLint configuration
+1. **Clone and start the backend:**
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+   ```bash
+   # Clone the backend repository (if not already cloned)
+   git clone <backend-repo-url>
+   cd <backend-repo-directory>
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+   # Install dependencies and start the server
+   npm install
+   npm start
+   ```
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+2. **Verify the backend is running:**
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+   The backend should be accessible at `http://localhost:4000` (or your configured port).
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+   Test with:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+   ```bash
+   curl http://localhost:4000/robots
+   ```
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+**Note:** Without a running backend, the application will display connection errors and no robot data will be available.
+
+## Getting Started
+
+1. **Install dependencies:**
+
+   ```bash
+   npm install
+   ```
+
+2. **Configure API endpoint (optional):**
+
+   Create a `.env` file in the root directory:
+
+   ```env
+   VITE_API_BASE_URL=http://localhost:4000
+   ```
+
+3. **Start development server:**
+
+   ```bash
+   npm run dev
+   ```
+
+   Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+4. **Build for production:**
+
+   ```bash
+   npm run build
+   ```
+
+5. **Run tests:**
+   ```bash
+   npm test
+   ```
+
+## Features
+
+- **Real-time tracking**: Auto-polling robot positions with configurable intervals
+- **Interactive map**: Leaflet-based visualization with OpenStreetMap tiles
+- **Movement controls**: Manual and automatic robot movement modes
+- **Input validation**: Client-side validation with safe range clamping
+- **Error handling**: User-friendly error messages with retry logic
+- **Responsive design**: Mobile-first approach with touch-optimized controls
+
+## Tech Stack
+
+- React 18 with TypeScript
+- Vite for build tooling
+- Leaflet for map visualization
+- Vitest for unit testing
+- ESLint + Prettier for code quality
