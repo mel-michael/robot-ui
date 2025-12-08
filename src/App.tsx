@@ -6,8 +6,10 @@ import { robotIcon, POLYGON, POLYGON_CENTER } from './config/polygon';
 import { MapBoundsHandler } from './components/MapHandler';
 import { ErrorBanner } from './components/ErrorBanner';
 import { useRobotsFetch } from './hooks/useRobotsFetch';
+import { useValidatedInput } from './hooks/useValidatedInput';
 import { robotApi } from './utils/api';
 import { validateInRange } from './utils/validation';
+import { validateAllInputs } from './utils/inputValidation';
 import {
   DEFAULT_ROBOT_COUNT,
   DEFAULT_MOVE_METERS,
@@ -23,32 +25,52 @@ import type { RobotPosition } from './types/robot';
 import './App.css';
 
 const App: React.FC = () => {
-  const [robots, setRobots] = useState<RobotPosition[]>([]);
-  const [meters, setMeters] = useState(DEFAULT_MOVE_METERS);
-  const [autoIntervalMs, setAutoIntervalMs] = useState(DEFAULT_MOVE_INTERVAL_MS);
-  const [robotCount, setRobotCount] = useState(DEFAULT_ROBOT_COUNT);
   const [isAutoRunning, setIsAutoRunning] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
+  const [robots, setRobots] = useState<RobotPosition[]>([]);
+
+  const meters = useValidatedInput({
+    initialValue: DEFAULT_MOVE_METERS,
+    min: MIN_MOVE_METERS,
+    max: MAX_MOVE_METERS,
+  });
+
+  const autoIntervalMs = useValidatedInput({
+    initialValue: DEFAULT_MOVE_INTERVAL_MS,
+    min: MIN_INTERVAL_MS,
+    max: MAX_INTERVAL_MS,
+  });
+
+  const robotCount = useValidatedInput({
+    initialValue: DEFAULT_ROBOT_COUNT,
+    min: MIN_ROBOT_COUNT,
+    max: MAX_ROBOT_COUNT,
+  });
 
   // Fetch robots on interval (only when auto-running)
   useRobotsFetch({
     onUpdate: setRobots,
     onError: setError,
-    intervalMs: autoIntervalMs,
+    intervalMs: autoIntervalMs.value,
     enabled: isAutoRunning,
   });
 
   const handleMove = useCallback(async () => {
-    const validation = validateInRange(meters, MIN_MOVE_METERS, MAX_MOVE_METERS, 'Move meters');
+    // Validate meters only
+    const validation = validateInRange(
+      meters.value,
+      MIN_MOVE_METERS,
+      MAX_MOVE_METERS,
+      'Move meters'
+    );
     if (!validation.isValid) {
       setError(validation.error ?? null);
-      setMeters(validation.value);
+      meters.setValue(validation.value);
       return;
     }
 
     setError(null);
-
     const result = await robotApi.move({ meters: validation.value });
 
     if (result.success) {
@@ -59,50 +81,35 @@ const App: React.FC = () => {
   }, [meters]);
 
   const handleApplyChanges = useCallback(async () => {
-    // Validate all inputs
-    const metersValidation = validateInRange(
-      meters,
-      MIN_MOVE_METERS,
-      MAX_MOVE_METERS,
-      'Move meters'
-    );
-    const intervalValidation = validateInRange(
-      autoIntervalMs,
-      MIN_INTERVAL_MS,
-      MAX_INTERVAL_MS,
-      'Auto interval'
-    );
-    const countValidation = validateInRange(
-      robotCount,
-      MIN_ROBOT_COUNT,
-      MAX_ROBOT_COUNT,
-      'Robot count'
+    const result = validateAllInputs(
+      {
+        meters: meters.value,
+        intervalMs: autoIntervalMs.value,
+        robotCount: robotCount.value,
+      },
+      true
     );
 
-    if (!metersValidation.isValid) {
-      setError(metersValidation.error ?? null);
-      setMeters(metersValidation.value);
+    if ('error' in result) {
+      setError(result.error.message);
+      if (result.error.field === 'meters') {
+        meters.setValue(result.error.correctedValue);
+      }
+      if (result.error.field === 'intervalMs') {
+        autoIntervalMs.setValue(result.error.correctedValue);
+      }
+      if (result.error.field === 'robotCount') {
+        robotCount.setValue(result.error.correctedValue);
+      }
       return;
     }
 
-    if (!intervalValidation.isValid) {
-      setError(intervalValidation.error ?? null);
-      setAutoIntervalMs(intervalValidation.value);
-      return;
-    }
-
-    if (!countValidation.isValid) {
-      setError(countValidation.error ?? null);
-      setRobotCount(countValidation.value);
-      return;
-    }
-
+    const { validated } = result;
     setLoadingAction('apply-changes');
     setError(null);
 
     const wasRunning = isAutoRunning;
 
-    // Stop auto if running
     if (wasRunning) {
       const stopResult = await robotApi.stopAuto();
       if (!stopResult.success) {
@@ -113,8 +120,7 @@ const App: React.FC = () => {
       setIsAutoRunning(false);
     }
 
-    // Update robot count
-    const resetResult = await robotApi.reset({ count: countValidation.value });
+    const resetResult = await robotApi.reset({ count: validated.count! });
     if (!resetResult.success) {
       setError(`Failed to update robot count: ${resetResult.error}`);
       setLoadingAction(null);
@@ -122,11 +128,10 @@ const App: React.FC = () => {
     }
     setRobots(resetResult.data.robots ?? []);
 
-    // Restart auto with new params if it was running
     if (wasRunning) {
       const startResult = await robotApi.startAuto({
-        meters: metersValidation.value,
-        intervalMs: intervalValidation.value,
+        meters: validated.meters,
+        intervalMs: validated.intervalMs,
       });
 
       if (startResult.success) {
@@ -140,44 +145,40 @@ const App: React.FC = () => {
   }, [meters, autoIntervalMs, robotCount, isAutoRunning]);
 
   const handleStartAuto = useCallback(async () => {
-    const metersValidation = validateInRange(
-      meters,
-      MIN_MOVE_METERS,
-      MAX_MOVE_METERS,
-      'Move meters'
-    );
-    const intervalValidation = validateInRange(
-      autoIntervalMs,
-      MIN_INTERVAL_MS,
-      MAX_INTERVAL_MS,
-      'Auto interval'
+    const result = validateAllInputs(
+      {
+        meters: meters.value,
+        intervalMs: autoIntervalMs.value,
+        robotCount: robotCount.value,
+      },
+      false // don't include robot count
     );
 
-    if (!metersValidation.isValid) {
-      setError(metersValidation.error ?? null);
-      setMeters(metersValidation.value);
+    if ('error' in result) {
+      setError(result.error.message);
+      if (result.error.field === 'meters') {
+        meters.setValue(result.error.correctedValue);
+      }
+      if (result.error.field === 'intervalMs') {
+        autoIntervalMs.setValue(result.error.correctedValue);
+      }
       return;
     }
 
-    if (!intervalValidation.isValid) {
-      setError(intervalValidation.error ?? null);
-      setAutoIntervalMs(intervalValidation.value);
-      return;
-    }
-
+    const { validated } = result;
     setError(null);
 
-    const result = await robotApi.startAuto({
-      meters: metersValidation.value,
-      intervalMs: intervalValidation.value,
+    const apiResult = await robotApi.startAuto({
+      meters: validated.meters,
+      intervalMs: validated.intervalMs,
     });
 
-    if (result.success) {
+    if (apiResult.success) {
       setIsAutoRunning(true);
     } else {
-      setError(`Start auto failed: ${result.error}`);
+      setError(`Start auto failed: ${apiResult.error}`);
     }
-  }, [meters, autoIntervalMs]);
+  }, [meters, autoIntervalMs, robotCount]);
 
   const handleStopAuto = useCallback(async () => {
     setError(null);
@@ -204,12 +205,10 @@ const App: React.FC = () => {
       setIsAutoRunning(false);
     }
 
-    // Reset to defaults
-    setMeters(DEFAULT_MOVE_METERS);
-    setAutoIntervalMs(DEFAULT_MOVE_INTERVAL_MS);
-    setRobotCount(DEFAULT_ROBOT_COUNT);
+    meters.setValue(DEFAULT_MOVE_METERS);
+    autoIntervalMs.setValue(DEFAULT_MOVE_INTERVAL_MS);
+    robotCount.setValue(DEFAULT_ROBOT_COUNT);
 
-    // Re-initialize with default count
     const result = await robotApi.reset({ count: DEFAULT_ROBOT_COUNT });
 
     if (result.success) {
@@ -217,7 +216,7 @@ const App: React.FC = () => {
     } else {
       setError(`Reset failed: ${result.error}`);
     }
-  }, [isAutoRunning]);
+  }, [isAutoRunning, meters, autoIntervalMs, robotCount]);
 
   return (
     <div className="app-root">
@@ -253,16 +252,9 @@ const App: React.FC = () => {
               Move meters:
               <input
                 type="number"
-                value={meters}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  setMeters(val);
-                }}
-                onBlur={(e) => {
-                  const val = Number(e.target.value);
-                  if (val < MIN_MOVE_METERS) setMeters(MIN_MOVE_METERS);
-                  else if (val > MAX_MOVE_METERS) setMeters(MAX_MOVE_METERS);
-                }}
+                value={meters.value}
+                onChange={meters.handleChange}
+                onBlur={meters.handleBlur}
                 min={MIN_MOVE_METERS}
                 max={MAX_MOVE_METERS}
                 step={0.1}
@@ -274,16 +266,9 @@ const App: React.FC = () => {
               Auto interval (ms):
               <input
                 type="number"
-                value={autoIntervalMs}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  setAutoIntervalMs(val);
-                }}
-                onBlur={(e) => {
-                  const val = Number(e.target.value);
-                  if (val < MIN_INTERVAL_MS) setAutoIntervalMs(MIN_INTERVAL_MS);
-                  else if (val > MAX_INTERVAL_MS) setAutoIntervalMs(MAX_INTERVAL_MS);
-                }}
+                value={autoIntervalMs.value}
+                onChange={autoIntervalMs.handleChange}
+                onBlur={autoIntervalMs.handleBlur}
                 min={MIN_INTERVAL_MS}
                 max={MAX_INTERVAL_MS}
                 step={100}
@@ -295,16 +280,9 @@ const App: React.FC = () => {
               Robot count:
               <input
                 type="number"
-                value={robotCount}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  setRobotCount(val);
-                }}
-                onBlur={(e) => {
-                  const val = Number(e.target.value);
-                  if (val < MIN_ROBOT_COUNT) setRobotCount(MIN_ROBOT_COUNT);
-                  else if (val > MAX_ROBOT_COUNT) setRobotCount(MAX_ROBOT_COUNT);
-                }}
+                value={robotCount.value}
+                onChange={robotCount.handleChange}
+                onBlur={robotCount.handleBlur}
                 min={MIN_ROBOT_COUNT}
                 max={MAX_ROBOT_COUNT}
                 step={1}
@@ -348,7 +326,7 @@ const App: React.FC = () => {
           />
 
           {robots.map(([lat, lng], idx) => (
-            <Marker key={idx} position={[lat, lng]} icon={robotIcon} />
+            <Marker key={`${lat}-${lng}-${idx}`} position={[lat, lng]} icon={robotIcon} />
           ))}
         </MapContainer>
       </main>
