@@ -1,9 +1,17 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach, afterAll } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ErrorBanner } from '../ErrorBanner';
 
 describe('ErrorBanner', () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterAll(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+  });
   it('renders error message', () => {
     const onDismiss = vi.fn();
     render(<ErrorBanner message="Test error message" onDismiss={onDismiss} />);

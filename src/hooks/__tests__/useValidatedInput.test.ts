@@ -1,8 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach, afterAll, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useValidatedInput } from '../useValidatedInput';
 
 describe('useValidatedInput', () => {
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterAll(() => {
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+  });
   it('initializes with provided value', () => {
     const { result } = renderHook(() =>
       useValidatedInput({
