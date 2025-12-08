@@ -1,75 +1,26 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { MapContainer, TileLayer, Marker, Polygon, useMap } from 'react-leaflet';
+import React, { useState, useCallback } from 'react';
+import { MapContainer, TileLayer, Marker, Polygon } from 'react-leaflet';
 import { Play, Pause, Move, RotateCcw } from 'lucide-react';
-import L, { type LatLngExpression } from 'leaflet';
+
+import { robotIcon, POLYGON } from './config/polygon';
+import { MapBoundsHandler } from './components/MapHandler';
+import { useRobotsFetch } from './hooks/useRobotsFetch';
+import { API_BASE_URL, DEFAULT_MOVE_INTERVAL_MS } from './config/constant';
 import type { RobotPosition } from './types/robot';
-
-const API_BASE = 'http://localhost:4000';
-
-// Robot Icon
-const robotIcon = new L.DivIcon({
-  html: '<div class="robot-icon">🤖</div>',
-  className: '',
-  iconSize: [32, 32],
-  iconAnchor: [16, 16],
-});
-
-// Default Polygon - Downtown Los Angeles (DTLA) area
-const POLYGON: LatLngExpression[] = [
-  [34.055, -118.275],
-  [34.055, -118.225],
-  [34.02, -118.225],
-  [34.02, -118.275],
-];
-
-const FetchRobotsOnInterval: React.FC<{ onUpdate: (robots: RobotPosition[]) => void }> = ({
-  onUpdate,
-}) => {
-  useEffect(() => {
-    let isCancelled = false;
-
-    const fetchRobots = async () => {
-      try {
-        const res = await fetch(`${API_BASE}/robots`);
-        const data = await res.json();
-        if (!isCancelled) {
-          onUpdate(data.robots ?? []);
-        }
-      } catch (e) {
-        console.error('Failed to fetch robots', e);
-      }
-    };
-
-    fetchRobots();
-    const id = setInterval(fetchRobots, 1000); // poll every 1s
-    return () => {
-      isCancelled = true;
-      clearInterval(id);
-    };
-  }, [onUpdate]);
-
-  return null;
-};
-
-const FitPolygonOnMount: React.FC = () => {
-  const map = useMap();
-  useEffect(() => {
-    const bounds = L.latLngBounds(POLYGON as LatLngExpression[]);
-    map.fitBounds(bounds.pad(0.2)); // small padding around polygon
-  }, [map]);
-  return null;
-};
 
 const App: React.FC = () => {
   const [robots, setRobots] = useState<RobotPosition[]>([]);
   const [meters, setMeters] = useState(1);
-  const [autoIntervalMs, setAutoIntervalMs] = useState(1000);
+  const [autoIntervalMs, setAutoIntervalMs] = useState(DEFAULT_MOVE_INTERVAL_MS);
   const [resetCount, setResetCount] = useState(20);
   const [isAutoRunning, setIsAutoRunning] = useState(true);
 
+  // Fetch robots on interval
+  useRobotsFetch({ onUpdate: setRobots, intervalMs: autoIntervalMs });
+
   const handleMove = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/move`, {
+      const res = await fetch(`${API_BASE_URL}/move`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ meters }),
@@ -83,7 +34,7 @@ const App: React.FC = () => {
 
   const handleReset = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/reset`, {
+      const res = await fetch(`${API_BASE_URL}/reset`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ count: resetCount }),
@@ -97,7 +48,7 @@ const App: React.FC = () => {
 
   const handleStartAuto = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/start-auto`, {
+      const res = await fetch(`${API_BASE_URL}/start-auto`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ meters, intervalMs: autoIntervalMs }),
@@ -111,7 +62,7 @@ const App: React.FC = () => {
 
   const handleStopAuto = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE}/stop-auto`, {
+      const res = await fetch(`${API_BASE_URL}/stop-auto`, {
         method: 'POST',
       });
       await res.json();
@@ -189,7 +140,7 @@ const App: React.FC = () => {
           zoom={14}
           scrollWheelZoom
         >
-          <FitPolygonOnMount />
+          <MapBoundsHandler />
           <TileLayer
             attribution="&copy; OpenStreetMap contributors"
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -208,7 +159,6 @@ const App: React.FC = () => {
           {robots.map(([lat, lng], idx) => (
             <Marker key={idx} position={[lat, lng]} icon={robotIcon} />
           ))}
-          <FetchRobotsOnInterval onUpdate={setRobots} />
         </MapContainer>
       </main>
     </div>
