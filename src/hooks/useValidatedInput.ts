@@ -14,25 +14,12 @@ interface UseValidatedInputReturn {
 }
 
 function clamp(value: number, min: number, max: number): number {
+  if (!Number.isFinite(value)) {
+    return min;
+  }
   return Math.min(Math.max(value, min), max);
 }
 
-/**
- * Custom hook for managing validated numeric inputs with automatic clamping
- *
- * @param initialValue - Starting value for the input
- * @param min - Minimum allowed value (will clamp to this on blur)
- * @param max - Maximum allowed value (will clamp to this on blur)
- *
- * @example
- * const meters = useValidatedInput({
- *   initialValue: 1,
- *   min: 0.1,
- *   max: 1000
- * });
- *
- * <input value={meters.value} onChange={meters.handleChange} onBlur={meters.handleBlur} />
- */
 export const useValidatedInput = ({
   initialValue,
   min,
@@ -46,7 +33,6 @@ export const useValidatedInput = ({
   }, []);
 
   const handleBlur = useCallback(() => {
-    // Clamp value to min/max range when user leaves the input
     const clamped = clamp(value, min, max);
     setValue(clamped);
   }, [value, min, max]);

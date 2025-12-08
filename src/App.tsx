@@ -325,9 +325,10 @@ const App: React.FC = () => {
             }}
           />
 
-          {robots.map(([lat, lng], idx) => (
-            <Marker key={`${lat}-${lng}-${idx}`} position={[lat, lng]} icon={robotIcon} />
-          ))}
+          {robots.map(([lat, lng]) => {
+            const robotId = `${crypto.randomUUID()}-${lat}-${lng}`;
+            return <Marker key={robotId} position={[lat, lng]} icon={robotIcon} />;
+          })}
         </MapContainer>
       </main>
     </div>

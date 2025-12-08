@@ -14,10 +14,15 @@ export interface InputValues {
   robotCount: number;
 }
 
-export interface ValidatedInputs {
+export interface ValidatedInputsWithoutCount {
   meters: number;
   intervalMs: number;
-  count?: number;
+}
+
+export interface ValidatedInputsWithCount {
+  meters: number;
+  intervalMs: number;
+  count: number;
 }
 
 export interface ValidationError {
@@ -26,27 +31,16 @@ export interface ValidationError {
   correctedValue: number;
 }
 
-/**
- * Validates all input values and returns validated values or an error.
- * This is a pure function that can be easily unit tested.
- *
- * @param values - The input values to validate
- * @param includeRobotCount - Whether to validate robot count
- * @returns Object with either validated values or an error
- *
- * @example
- * const result = validateAllInputs({ meters: 5, intervalMs: 1000, robotCount: 20 }, true);
- * if (result.error) {
- *   // Handle error: result.error.message, result.error.correctedValue
- * } else {
- *   // Use validated values: result.validated.meters, etc.
- * }
- */
-export function validateAllInputs(
+type ValidationSuccess<T extends boolean> = {
+  validated: T extends true ? ValidatedInputsWithCount : ValidatedInputsWithoutCount;
+};
+
+type ValidationResult<T extends boolean> = ValidationSuccess<T> | { error: ValidationError };
+
+export function validateAllInputs<T extends boolean>(
   values: InputValues,
-  includeRobotCount = false
-): { validated: ValidatedInputs } | { error: ValidationError } {
-  // Validate meters
+  includeRobotCount: T
+): ValidationResult<T> {
   const metersValidation = validateInRange(
     values.meters,
     MIN_MOVE_METERS,
@@ -63,7 +57,6 @@ export function validateAllInputs(
     };
   }
 
-  // Validate interval
   const intervalValidation = validateInRange(
     values.intervalMs,
     MIN_INTERVAL_MS,
@@ -80,8 +73,6 @@ export function validateAllInputs(
     };
   }
 
-  // Optionally validate robot count
-  let countValue: number | undefined;
   if (includeRobotCount) {
     const countValidation = validateInRange(
       values.robotCount,
@@ -98,15 +89,20 @@ export function validateAllInputs(
         },
       };
     }
-    countValue = countValidation.value;
+
+    return {
+      validated: {
+        meters: metersValidation.value,
+        intervalMs: intervalValidation.value,
+        count: countValidation.value,
+      },
+    } as ValidationResult<T>;
   }
 
-  // All validations passed
   return {
     validated: {
       meters: metersValidation.value,
       intervalMs: intervalValidation.value,
-      count: countValue,
     },
-  };
+  } as ValidationResult<T>;
 }
