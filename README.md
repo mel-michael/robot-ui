@@ -9,14 +9,14 @@ A real-time robot tracking application built with React, TypeScript, and Leaflet
 
 ## Backend Setup
 
-This frontend application requires a running backend API to function. The backend is in a separate repository.
+This frontend application requires a running backend API to function. The backend is in a separate repository. The repo can be found [here](https://github.com/mel-michael/robot-api).
 
 1. **Clone and start the backend:**
 
    ```bash
    # Clone the backend repository (if not already cloned)
    git clone <backend-repo-url>
-   cd <backend-repo-directory>
+   cd `robot-api`
 
    # Install dependencies and start the server
    npm install
@@ -25,7 +25,7 @@ This frontend application requires a running backend API to function. The backen
 
 2. **Verify the backend is running:**
 
-   The backend should be accessible at `http://localhost:4000` (or your configured port).
+   The backend should be accessible at `http://localhost:4000`
 
    Test with:
 
